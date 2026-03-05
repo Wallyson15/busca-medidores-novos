@@ -4,62 +4,218 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Busca de Medidores</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    
     <style>
-        body { font-family: Arial, sans-serif; background-color: #f4f4f9; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
-        .container { width: 100%; max-width: 400px; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); box-sizing: border-box; }
-        h2 { text-align: center; color: #333; margin-top: 0; }
-        input { width: 100%; padding: 15px; font-size: 18px; border: 1px solid #ccc; border-radius: 8px; margin-bottom: 10px; box-sizing: border-box; }
-        button { width: 100%; padding: 15px; font-size: 16px; background-color: #e74c3c; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
-        button:active { background-color: #c0392b; }
-        ul { list-style-type: none; padding: 0; margin-top: 20px; }
-        li { background: #ecf0f1; margin-bottom: 10px; padding: 15px; border-radius: 8px; font-size: 16px; color: #2c3e50; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
-        li:active { background: #bdc3c7; }
-        .icon-map { font-size: 20px; }
-        .aviso { text-align: center; color: #7f8c8d; font-size: 14px; margin-top: 15px; }
+        /* Variáveis de Cores para manter o padrão */
+        :root {
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --bg: #f1f5f9;
+            --surface: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --success: #10b981;
+        }
+
+        body { 
+            font-family: 'Inter', sans-serif; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            min-height: 100vh; 
+            background-color: var(--bg); 
+            margin: 0; 
+            padding: 20px;
+            box-sizing: border-box;
+            color: var(--text-main);
+        }
+
+        .container { 
+            background: var(--surface); 
+            padding: 2.5rem 2rem; 
+            border-radius: 16px; 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05); 
+            text-align: center; 
+            width: 100%;
+            max-width: 420px;
+        }
+
+        .header-title {
+            margin-top: 0;
+            margin-bottom: 5px;
+            font-size: 1.5rem;
+            color: var(--text-main);
+        }
+
+        .header-subtitle {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            margin-bottom: 25px;
+        }
+
+        .input-group {
+            position: relative;
+            margin-bottom: 15px;
+        }
+
+        input { 
+            padding: 14px; 
+            font-size: 16px; 
+            width: 100%; 
+            box-sizing: border-box;
+            border: 2px solid var(--border); 
+            border-radius: 10px; 
+            text-align: center;
+            transition: all 0.3s ease;
+            outline: none;
+            font-weight: 600;
+            letter-spacing: 1px;
+            color: var(--text-main);
+        }
+
+        input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+        }
+
+        button { 
+            padding: 14px 24px; 
+            font-size: 16px; 
+            background-color: var(--primary); 
+            color: white; 
+            border: none; 
+            border-radius: 10px; 
+            cursor: pointer; 
+            width: 100%;
+            font-weight: 600;
+            transition: background-color 0.2s ease, transform 0.1s ease;
+            box-shadow: 0 4px 6px rgba(37, 99, 235, 0.2);
+        }
+
+        button:hover { background-color: var(--primary-hover); }
+        button:active { transform: scale(0.98); }
+        
+        #mensagem { 
+            margin-top: 20px; 
+            font-size: 14px; 
+            font-weight: 600; 
+            min-height: 20px;
+        }
+        
+        /* Estilos modernos para a lista de resultados */
+        #listaResultados {
+            margin-top: 20px;
+            text-align: left;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .item-medidor {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            padding: 16px;
+            border-radius: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            animation: fadeIn 0.4s ease forwards;
+        }
+
+        .item-medidor:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.05);
+            border-color: #cbd5e1;
+        }
+
+        .info-medidor {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .info-label {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-muted);
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .info-numero {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .btn-mapa {
+            background-color: var(--success);
+            color: white;
+            text-decoration: none;
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: background-color 0.2s ease;
+            box-shadow: 0 2px 4px rgba(16, 185, 129, 0.2);
+        }
+
+        .btn-mapa:hover { background-color: #059669; }
+
+        /* Animação de surgimento suave */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
 
     <div class="container">
-        <h2>📍 Localizador de Medidores</h2>
-        <p>Digite os dígitos finais do medidor:</p>
-        <input type="text" id="inputMedidor" placeholder="Ex: 45072" autocomplete="off">
-        <button onclick="buscarMedidor()">Buscar</button>
+        <h2 class="header-title">📍 Localizador</h2>
+        <p class="header-subtitle">Digite os últimos dígitos do medidor</p>
+        
+        <div class="input-group">
+            <input type="text" id="inputMedidor" placeholder="Ex: 45072" autocomplete="off">
+        </div>
+        
+        <button onclick="buscarMedidor()">Buscar Medidor</button>
         
         <div id="mensagem"></div>
         <div id="listaResultados"></div> 
     </div>
 
     <script>
-        // ==========================================
-        // 1. CONFIGURAÇÃO DO SUPABASE
-        // ==========================================
         const supabaseUrl = 'https://hprrnzotddltordqwjui.supabase.co'; 
         const supabaseKey = 'sb_publishable_TFNoKnIrbxRdhalZSosXrA__4xfHKl3';
         const clienteSupabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
-        // ==========================================
-        // 2. LÓGICA DE BUSCA
-        // ==========================================
         async function buscarMedidor() {
             const input = document.getElementById('inputMedidor').value.trim();
             const divMensagem = document.getElementById('mensagem');
             const divResultados = document.getElementById('listaResultados');
 
-            // Limpa resultados anteriores
             divResultados.innerHTML = '';
 
             if (!input) {
-                divMensagem.innerHTML = "<span style='color: red;'>Por favor, digite o número do medidor.</span>";
+                divMensagem.innerHTML = "<span style='color: #ef4444;'>Por favor, digite o número do medidor.</span>";
                 return;
             }
 
-            divMensagem.innerHTML = "<span style='color: #007bff;'>Buscando no banco de dados... ⏳</span>";
+            divMensagem.innerHTML = "<span style='color: var(--primary);'>Buscando no banco de dados... ⏳</span>";
 
             try {
-                // Removemos o .limit(1) para trazer todos os resultados
-                // Adicionamos 'numero' no .select() para sabermos qual é qual
                 const { data, error } = await clienteSupabase
                     .from('medidores') 
                     .select('numero, lat, lng')
@@ -68,46 +224,42 @@
                 if (error) throw error;
 
                 if (data && data.length > 0) {
-                    divMensagem.innerHTML = `<span style='color: green;'>Encontramos ${data.length} medidor(es)! ✅</span>`;
+                    divMensagem.innerHTML = `<span style='color: var(--success);'>${data.length} medidor(es) encontrado(s)! ✅</span>`;
                     
-                    // Monta a lista de resultados
                     let htmlLista = '';
                     
                     data.forEach(medidor => {
                         let lat = String(medidor.lat).replace(',', '.');
                         let lng = String(medidor.lng).replace(',', '.');
 
-                        // Link oficial e mais confiável para abrir pinos no Google Maps
+                        // Link oficial e moderno para abrir o app do Google Maps na coordenada exata
                         const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
                         
-                        // Cria a "caixinha" de cada medidor
                         htmlLista += `
                             <div class="item-medidor">
-                                <div>
-                                    <strong>Medidor:</strong> <br>
-                                    <span style="font-size: 18px;">${medidor.numero}</span>
+                                <div class="info-medidor">
+                                    <span class="info-label">Nº do Medidor</span>
+                                    <span class="info-numero">${medidor.numero}</span>
                                 </div>
-                                <a href="${mapsUrl}" target="_blank" class="btn-mapa">📍 Mapa</a>
+                                <a href="${mapsUrl}" target="_blank" class="btn-mapa">
+                                    🗺️ Mapa
+                                </a>
                             </div>
                         `;
                     });
 
-                    // Coloca a lista gerada na tela
                     divResultados.innerHTML = htmlLista;
-                    document.getElementById('inputMedidor').value = ''; // Limpa o campo
+                    document.getElementById('inputMedidor').value = ''; 
                     
                 } else {
-                    divMensagem.innerHTML = "<span style='color: orange;'>Nenhum medidor encontrado com esses dígitos finais. ❌</span>";
+                    divMensagem.innerHTML = "<span style='color: #f59e0b;'>Nenhum medidor encontrado. ❌</span>";
                 }
             } catch (err) {
                 console.error("Erro na busca:", err);
-                divMensagem.innerHTML = "<span style='color: red;'>Erro ao conectar com o banco de dados.</span>";
+                divMensagem.innerHTML = "<span style='color: #ef4444;'>Erro ao conectar com o banco de dados.</span>";
             }
         }
         
-        // ==========================================
-        // 3. EXTRA: BUSCAR COM A TECLA "ENTER"
-        // ==========================================
         document.getElementById('inputMedidor').addEventListener('keypress', function (e) {
             if (e.key === 'Enter') {
                 buscarMedidor();
@@ -117,4 +269,3 @@
 
 </body>
 </html>
-
