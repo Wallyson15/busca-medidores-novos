@@ -3,16 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Busca de Medidor</title>
+    <title>Busca de Medidores</title>
     <style>
         body { 
             font-family: Arial, sans-serif; 
             display: flex; 
             justify-content: center; 
             align-items: center; 
-            height: 100vh; 
+            min-height: 100vh; 
             background-color: #f0f2f5; 
             margin: 0; 
+            padding: 20px;
+            box-sizing: border-box;
         }
         .container { 
             background: white; 
@@ -44,7 +46,34 @@
             font-weight: bold;
         }
         button:hover { background-color: #0056b3; }
+        
         #mensagem { margin-top: 15px; font-size: 14px; font-weight: bold; }
+        
+        /* Novos estilos para a lista de resultados */
+        #listaResultados {
+            margin-top: 20px;
+            text-align: left;
+        }
+        .item-medidor {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .btn-mapa {
+            background-color: #28a745;
+            color: white;
+            text-decoration: none;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        .btn-mapa:hover { background-color: #218838; }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
@@ -53,77 +82,96 @@
     <div class="container">
         <h2>📍 Localizador de Medidores</h2>
         <p>Digite os dígitos finais do medidor:</p>
-        <input type="text" id="inputMedidor" placeholder="Ex: 12345" autocomplete="off">
-        <button onclick="buscarMedidor()">Buscar no Mapa</button>
+        <input type="text" id="inputMedidor" placeholder="Ex: 45072" autocomplete="off">
+        <button onclick="buscarMedidor()">Buscar</button>
+        
         <div id="mensagem"></div>
+        <div id="listaResultados"></div> 
     </div>
 
     <script>
-// ==========================================
-// 1. CONFIGURAÇÃO DO SUPABASE
-// ==========================================
-const supabaseUrl = 'https://hprrnzotddltordqwjui.supabase.co'; 
+        // ==========================================
+        // 1. CONFIGURAÇÃO DO SUPABASE
+        // ==========================================
+        const supabaseUrl = 'https://hprrnzotddltordqwjui.supabase.co'; 
+        const supabaseKey = 'sb_publishable_TFNoKnIrbxRdhalZSosXrA__4xfHKl3';
+        const clienteSupabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
-// ATENÇÃO: Verifique esta chave! Chaves do Supabase geralmente começam com "eyJ"
-const supabaseKey = 'sb_publishable_TFNoKnIrbxRdhalZSosXrA__4xfHKl3';
+        // ==========================================
+        // 2. LÓGICA DE BUSCA
+        // ==========================================
+        async function buscarMedidor() {
+            const input = document.getElementById('inputMedidor').value.trim();
+            const divMensagem = document.getElementById('mensagem');
+            const divResultados = document.getElementById('listaResultados');
 
-// CORREÇÃO AQUI: Mudamos o nome da variável para 'clienteSupabase'
-const clienteSupabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+            // Limpa resultados anteriores
+            divResultados.innerHTML = '';
 
-// ==========================================
-// 2. LÓGICA DE BUSCA
-// ==========================================
-async function buscarMedidor() {
-    const input = document.getElementById('inputMedidor').value.trim();
-    const divMensagem = document.getElementById('mensagem');
+            if (!input) {
+                divMensagem.innerHTML = "<span style='color: red;'>Por favor, digite o número do medidor.</span>";
+                return;
+            }
 
-    if (!input) {
-        divMensagem.innerHTML = "<span style='color: red;'>Por favor, digite o número do medidor.</span>";
-        return;
-    }
+            divMensagem.innerHTML = "<span style='color: #007bff;'>Buscando no banco de dados... ⏳</span>";
 
-    divMensagem.innerHTML = "<span style='color: #007bff;'>Buscando no banco de dados... ⏳</span>";
+            try {
+                // Removemos o .limit(1) para trazer todos os resultados
+                // Adicionamos 'numero' no .select() para sabermos qual é qual
+                const { data, error } = await clienteSupabase
+                    .from('medidores') 
+                    .select('numero, lat, lng')
+                    .like('numero', `%${input}`); 
 
-    try {
-        // CORREÇÃO AQUI: Usando o 'clienteSupabase' para fazer a busca
-        const { data, error } = await clienteSupabase
-            .from('medidores') 
-            .select('lat, lng')
-            .like('numero', `%${input}`)
-            .limit(1);
+                if (error) throw error;
 
-        if (error) throw error;
+                if (data && data.length > 0) {
+                    divMensagem.innerHTML = `<span style='color: green;'>Encontramos ${data.length} medidor(es)! ✅</span>`;
+                    
+                    // Monta a lista de resultados
+                    let htmlLista = '';
+                    
+                    data.forEach(medidor => {
+                        let lat = String(medidor.lat).replace(',', '.');
+                        let lng = String(medidor.lng).replace(',', '.');
 
-        if (data && data.length > 0) {
-            divMensagem.innerHTML = "<span style='color: green;'>Medidor encontrado! Abrindo mapa... ✅</span>";
-            
-            let lat = String(data[0].lat).replace(',', '.');
-            let lng = String(data[0].lng).replace(',', '.');
+                        // Link oficial e mais confiável para abrir pinos no Google Maps
+                        const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
+                        
+                        // Cria a "caixinha" de cada medidor
+                        htmlLista += `
+                            <div class="item-medidor">
+                                <div>
+                                    <strong>Medidor:</strong> <br>
+                                    <span style="font-size: 18px;">${medidor.numero}</span>
+                                </div>
+                                <a href="${mapsUrl}" target="_blank" class="btn-mapa">📍 Mapa</a>
+                            </div>
+                        `;
+                    });
 
-            // CORREÇÃO AQUI: Link do Maps ajustado para o formato padrão de busca por coordenada
-            const mapsUrl = `https://maps.google.com/maps?q=${lat},${lng}`;
-            window.open(mapsUrl, '_blank');
-            
-            document.getElementById('inputMedidor').value = '';
-        } else {
-            divMensagem.innerHTML = "<span style='color: orange;'>Nenhum medidor encontrado com esses dígitos finais. ❌</span>";
+                    // Coloca a lista gerada na tela
+                    divResultados.innerHTML = htmlLista;
+                    document.getElementById('inputMedidor').value = ''; // Limpa o campo
+                    
+                } else {
+                    divMensagem.innerHTML = "<span style='color: orange;'>Nenhum medidor encontrado com esses dígitos finais. ❌</span>";
+                }
+            } catch (err) {
+                console.error("Erro na busca:", err);
+                divMensagem.innerHTML = "<span style='color: red;'>Erro ao conectar com o banco de dados.</span>";
+            }
         }
-    } catch (err) {
-        console.error("Erro na busca:", err);
-        divMensagem.innerHTML = "<span style='color: red;'>Erro ao conectar com o banco de dados. Verifique a chave (API Key).</span>";
-    }
-}
-
-// ==========================================
-// 3. EXTRA: BUSCAR COM A TECLA "ENTER"
-// ==========================================
-document.getElementById('inputMedidor').addEventListener('keypress', function (e) {
-    if (e.key === 'Enter') {
-        buscarMedidor();
-    }
-});
+        
+        // ==========================================
+        // 3. EXTRA: BUSCAR COM A TECLA "ENTER"
+        // ==========================================
+        document.getElementById('inputMedidor').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                buscarMedidor();
+            }
+        });
     </script>
 
 </body>
 </html>
-
