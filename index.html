@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Busca de Medidores</title>
+    <title>Busca de Medidores Avançada</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     
     <style>
         :root {
@@ -41,9 +41,8 @@
             padding: 2.5rem 2rem; 
             border-radius: 16px; 
             box-shadow: 0 10px 25px rgba(0,0,0,0.05); 
-            text-align: center; 
             width: 100%;
-            max-width: 420px;
+            max-width: 450px; 
         }
 
         .header-title {
@@ -51,18 +50,34 @@
             margin-bottom: 5px;
             font-size: 1.5rem;
             color: var(--text-main);
+            text-align: center;
         }
 
         .header-subtitle {
             color: var(--text-muted);
             font-size: 0.95rem;
             margin-bottom: 25px;
+            text-align: center;
         }
 
-        .input-group {
-            position: relative;
-            margin-bottom: 15px;
+        select {
+            padding: 12px;
+            font-size: 15px;
+            width: 100%;
+            margin-bottom: 10px;
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            font-weight: 600;
+            color: var(--text-main);
+            outline: none;
+            background-color: var(--surface);
+            cursor: pointer;
+            transition: border-color 0.3s ease;
         }
+        
+        select:focus { border-color: var(--primary); }
+
+        .input-group { position: relative; margin-bottom: 15px; }
 
         input { 
             padding: 14px; 
@@ -84,7 +99,6 @@
             box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
         }
 
-        /* Agrupamento dos botões lado a lado */
         .botoes-grupo {
             display: flex;
             gap: 10px;
@@ -106,16 +120,12 @@
         .btn-buscar {
             background-color: var(--primary); 
             color: white; 
-            flex: 2; /* Ocupa mais espaço */
+            flex: 2; 
             box-shadow: 0 4px 6px rgba(37, 99, 235, 0.2);
         }
         .btn-buscar:hover { background-color: var(--primary-hover); }
 
-        .btn-limpar {
-            background-color: var(--secondary);
-            color: var(--text-main);
-            flex: 1; /* Ocupa menos espaço */
-        }
+        .btn-limpar { background-color: var(--secondary); color: var(--text-main); flex: 1; }
         .btn-limpar:hover { background-color: var(--secondary-hover); }
         
         #mensagem { 
@@ -123,68 +133,81 @@
             font-size: 14px; 
             font-weight: 600; 
             min-height: 20px;
+            text-align: center;
         }
         
         #listaResultados {
             margin-top: 20px;
-            text-align: left;
             display: flex;
             flex-direction: column;
-            gap: 12px;
+            gap: 15px;
         }
 
         .item-medidor {
             background: var(--surface);
             border: 1px solid var(--border);
-            padding: 16px;
+            padding: 18px;
             border-radius: 12px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
             box-shadow: 0 2px 4px rgba(0,0,0,0.02);
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
             animation: fadeIn 0.4s ease forwards;
         }
 
-        .item-medidor:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 12px rgba(0,0,0,0.05);
-            border-color: #cbd5e1;
-        }
-
-        .info-medidor {
+        .cabecalho-card {
             display: flex;
-            flex-direction: column;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 12px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border);
         }
 
-        .info-label {
-            font-size: 12px;
+        .info-principal .info-label {
+            font-size: 11px;
             text-transform: uppercase;
             letter-spacing: 0.5px;
             color: var(--text-muted);
             font-weight: 700;
-            margin-bottom: 4px;
+            display: block;
+            margin-bottom: 2px;
         }
 
-        .info-numero {
-            font-size: 1.1rem;
+        .info-principal .info-numero {
+            font-size: 1.25rem;
             font-weight: 700;
+            color: var(--primary);
+        }
+
+        .detalhes-secundarios {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            font-size: 0.9rem;
             color: var(--text-main);
+        }
+
+        .detalhes-secundarios span strong {
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .badge-duplo {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 5px;
         }
 
         .btn-mapa {
             background-color: var(--success);
             color: white;
             text-decoration: none;
-            padding: 10px 16px;
+            padding: 8px 14px;
             border-radius: 8px;
             font-size: 14px;
             font-weight: 600;
-            display: flex;
+            display: inline-flex;
             align-items: center;
             gap: 6px;
             transition: background-color 0.2s ease;
-            box-shadow: 0 2px 4px rgba(16, 185, 129, 0.2);
         }
 
         .btn-mapa:hover { background-color: #059669; }
@@ -200,14 +223,19 @@
 
     <div class="container">
         <h2 class="header-title">📍 Localizador</h2>
-        <p class="header-subtitle">Digite os últimos dígitos do medidor</p>
+        <p class="header-subtitle">Encontre equipamentos em campo</p>
         
+        <select id="tipoBusca" onchange="atualizarPlaceholder()">
+            <option value="numero">Buscar por: Nº do Medidor</option>
+            <option value="pg">Buscar por: ID do Poste (PG)</option>
+        </select>
+
         <div class="input-group">
-            <input type="text" id="inputMedidor" placeholder="Ex: 45072" autocomplete="off">
+            <input type="text" id="inputBusca" placeholder="Ex: 45072 (Dígitos finais)" autocomplete="off">
         </div>
         
         <div class="botoes-grupo">
-            <button class="btn-buscar" onclick="buscarMedidor()">Buscar</button>
+            <button class="btn-buscar" onclick="buscarDados()">Buscar</button>
             <button class="btn-limpar" onclick="limparBusca()">Limpar</button>
         </div>
         
@@ -216,19 +244,33 @@
     </div>
 
     <script>
+        // Suas chaves corretas já inseridas aqui!
         const supabaseUrl = 'https://hprrnzotddltordqwjui.supabase.co'; 
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhwcnJuem90ZGRsdG9yZHF3anVpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI3MzExNTMsImV4cCI6MjA4ODMwNzE1M30.TU5clfW2ce0iku1Vo4oNa34G920lyJvwJ8TJscklI8s';
         const clienteSupabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
-        async function buscarMedidor() {
-            const input = document.getElementById('inputMedidor').value.trim();
+        function atualizarPlaceholder() {
+            const tipo = document.getElementById('tipoBusca').value;
+            const input = document.getElementById('inputBusca');
+            if (tipo === 'numero') {
+                input.placeholder = "Ex: 45072 (Dígitos finais)";
+            } else {
+                input.placeholder = "Ex: PG1234 (ID do Poste)";
+            }
+            input.focus();
+        }
+
+        async function buscarDados() {
+            const input = document.getElementById('inputBusca').value.trim();
+            const tipoBusca = document.getElementById('tipoBusca').value; 
+            
             const divMensagem = document.getElementById('mensagem');
             const divResultados = document.getElementById('listaResultados');
 
             divResultados.innerHTML = '';
 
             if (!input) {
-                divMensagem.innerHTML = "<span style='color: #ef4444;'>Por favor, digite o número do medidor.</span>";
+                divMensagem.innerHTML = "<span style='color: #ef4444;'>Por favor, digite o que deseja buscar.</span>";
                 return;
             }
 
@@ -237,40 +279,51 @@
             try {
                 const { data, error } = await clienteSupabase
                     .from('medidores') 
-                    .select('numero, lat, lng')
-                    .like('numero', `%${input}`); 
+                    .select('numero, lat, lng, endereco, pg, mru')
+                    .like(tipoBusca, `%${input}%`); 
 
                 if (error) throw error;
 
                 if (data && data.length > 0) {
-                    divMensagem.innerHTML = `<span style='color: var(--success);'>${data.length} medidor(es) encontrado(s)! ✅</span>`;
+                    divMensagem.innerHTML = `<span style='color: var(--success);'>${data.length} resultado(s) encontrado(s)! ✅</span>`;
                     
                     let htmlLista = '';
                     
-                    data.forEach(medidor => {
-                        let lat = String(medidor.lat).replace(',', '.');
-                        let lng = String(medidor.lng).replace(',', '.');
-
+                    data.forEach(item => {
+                        let lat = String(item.lat).replace(',', '.');
+                        let lng = String(item.lng).replace(',', '.');
+                        
+                        // Link oficial do Google Maps corrigido definitivamente
                         const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
+                        
+                        let enderecoTexto = item.endereco ? item.endereco : "Não informado";
+                        let pgTexto = item.pg ? item.pg : "N/D";
+                        let mruTexto = item.mru ? item.mru : "N/D";
                         
                         htmlLista += `
                             <div class="item-medidor">
-                                <div class="info-medidor">
-                                    <span class="info-label">Nº do Medidor</span>
-                                    <span class="info-numero">${medidor.numero}</span>
+                                <div class="cabecalho-card">
+                                    <div class="info-principal">
+                                        <span class="info-label">Medidor</span>
+                                        <span class="info-numero">${item.numero}</span>
+                                    </div>
+                                    <a href="${mapsUrl}" target="_blank" class="btn-mapa">🗺️ Mapa</a>
                                 </div>
-                                <a href="${mapsUrl}" target="_blank" class="btn-mapa">
-                                    🗺️ Mapa
-                                </a>
+                                <div class="detalhes-secundarios">
+                                    <div class="badge-duplo">
+                                        <span><strong>PG:</strong> ${pgTexto}</span>
+                                        <span><strong>MRU:</strong> ${mruTexto}</span>
+                                    </div>
+                                    <span><strong>Endereço:</strong> ${enderecoTexto}</span>
+                                </div>
                             </div>
                         `;
                     });
 
                     divResultados.innerHTML = htmlLista;
-                    // Mantive o campo com o número digitado para caso o usuário queira apagar só um dígito
                     
                 } else {
-                    divMensagem.innerHTML = "<span style='color: #f59e0b;'>Nenhum medidor encontrado. ❌</span>";
+                    divMensagem.innerHTML = "<span style='color: #f59e0b;'>Nenhum resultado encontrado. ❌</span>";
                 }
             } catch (err) {
                 console.error("Erro na busca:", err);
@@ -278,31 +331,19 @@
             }
         }
         
-        // ==========================================
-        // NOVA FUNÇÃO: Limpar Busca
-        // ==========================================
         function limparBusca() {
-            // Esvazia o campo de digitação
-            document.getElementById('inputMedidor').value = '';
-            
-            // Apaga as mensagens
+            document.getElementById('inputBusca').value = '';
             document.getElementById('mensagem').innerHTML = '';
-            
-            // Apaga a lista de resultados
             document.getElementById('listaResultados').innerHTML = '';
-            
-            // Devolve o cursor piscando para o campo de texto automaticamente
-            document.getElementById('inputMedidor').focus();
+            document.getElementById('inputBusca').focus();
         }
 
-        document.getElementById('inputMedidor').addEventListener('keypress', function (e) {
+        document.getElementById('inputBusca').addEventListener('keypress', function (e) {
             if (e.key === 'Enter') {
-                buscarMedidor();
+                buscarDados();
             }
         });
     </script>
 
 </body>
 </html>
-
-
