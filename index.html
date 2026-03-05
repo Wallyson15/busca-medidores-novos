@@ -59,69 +59,71 @@
     </div>
 
     <script>
-        // ==========================================
-        // 1. CONFIGURAÇÃO DO SUPABASE
-        // ==========================================
-        const supabaseUrl = 'https://hprrnzotddltordqwjui.supabase.co'; 
-        
-        // ATENÇÃO: Verifique esta chave! Chaves do Supabase geralmente começam com "eyJ"
-        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhwcnJuem90ZGRsdG9yZHF3anVpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI3MzExNTMsImV4cCI6MjA4ODMwNzE1M30.TU5clfW2ce0iku1Vo4oNa34G920lyJvwJ8TJscklI8s';
-        
-        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+// ==========================================
+// 1. CONFIGURAÇÃO DO SUPABASE
+// ==========================================
+const supabaseUrl = 'https://hprrnzotddltordqwjui.supabase.co'; 
 
-        // ==========================================
-        // 2. LÓGICA DE BUSCA
-        // ==========================================
-        async function buscarMedidor() {
-            const input = document.getElementById('inputMedidor').value.trim();
-            const divMensagem = document.getElementById('mensagem');
+// ATENÇÃO: Verifique esta chave! Chaves do Supabase geralmente começam com "eyJ"
+const supabaseKey = 'sb_publishable_TFNoKnIrbxRdhalZSosXrA__4xfHKl3';
 
-            if (!input) {
-                divMensagem.innerHTML = "<span style='color: red;'>Por favor, digite o número do medidor.</span>";
-                return;
-            }
+// CORREÇÃO AQUI: Mudamos o nome da variável para 'clienteSupabase'
+const clienteSupabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
-            divMensagem.innerHTML = "<span style='color: #007bff;'>Buscando no banco de dados... ⏳</span>";
+// ==========================================
+// 2. LÓGICA DE BUSCA
+// ==========================================
+async function buscarMedidor() {
+    const input = document.getElementById('inputMedidor').value.trim();
+    const divMensagem = document.getElementById('mensagem');
 
-            try {
-                const { data, error } = await supabase
-                    .from('medidores') 
-                    .select('lat, lng')
-                    .like('numero', `%${input}`)
-                    .limit(1);
+    if (!input) {
+        divMensagem.innerHTML = "<span style='color: red;'>Por favor, digite o número do medidor.</span>";
+        return;
+    }
 
-                if (error) throw error;
+    divMensagem.innerHTML = "<span style='color: #007bff;'>Buscando no banco de dados... ⏳</span>";
 
-                if (data && data.length > 0) {
-                    divMensagem.innerHTML = "<span style='color: green;'>Medidor encontrado! Abrindo mapa... ✅</span>";
-                    
-                    // Lendo corretamente 'lat' e 'lng' que vieram do banco
-                    let lat = String(data[0].lat).replace(',', '.');
-                    let lng = String(data[0].lng).replace(',', '.');
+    try {
+        // CORREÇÃO AQUI: Usando o 'clienteSupabase' para fazer a busca
+        const { data, error } = await clienteSupabase
+            .from('medidores') 
+            .select('lat, lng')
+            .like('numero', `%${input}`)
+            .limit(1);
 
-                    // Link oficial do Google Maps corrigido
-                    const mapsUrl = `https://www.google.com/maps?q=${lat},${lng}`;
-                    window.open(mapsUrl, '_blank');
-                    
-                    document.getElementById('inputMedidor').value = '';
-                } else {
-                    divMensagem.innerHTML = "<span style='color: orange;'>Nenhum medidor encontrado com esses dígitos finais. ❌</span>";
-                }
-            } catch (err) {
-                console.error("Erro na busca:", err);
-                divMensagem.innerHTML = "<span style='color: red;'>Erro ao conectar com o banco de dados. Verifique a chave (API Key).</span>";
-            }
+        if (error) throw error;
+
+        if (data && data.length > 0) {
+            divMensagem.innerHTML = "<span style='color: green;'>Medidor encontrado! Abrindo mapa... ✅</span>";
+            
+            let lat = String(data[0].lat).replace(',', '.');
+            let lng = String(data[0].lng).replace(',', '.');
+
+            // CORREÇÃO AQUI: Link do Maps ajustado para o formato padrão de busca por coordenada
+            const mapsUrl = `https://maps.google.com/maps?q=${lat},${lng}`;
+            window.open(mapsUrl, '_blank');
+            
+            document.getElementById('inputMedidor').value = '';
+        } else {
+            divMensagem.innerHTML = "<span style='color: orange;'>Nenhum medidor encontrado com esses dígitos finais. ❌</span>";
         }
-        
-        // ==========================================
-        // 3. EXTRA: BUSCAR COM A TECLA "ENTER"
-        // ==========================================
-        document.getElementById('inputMedidor').addEventListener('keypress', function (e) {
-            if (e.key === 'Enter') {
-                buscarMedidor();
-            }
-        });
+    } catch (err) {
+        console.error("Erro na busca:", err);
+        divMensagem.innerHTML = "<span style='color: red;'>Erro ao conectar com o banco de dados. Verifique a chave (API Key).</span>";
+    }
+}
+
+// ==========================================
+// 3. EXTRA: BUSCAR COM A TECLA "ENTER"
+// ==========================================
+document.getElementById('inputMedidor').addEventListener('keypress', function (e) {
+    if (e.key === 'Enter') {
+        buscarMedidor();
+    }
+});
     </script>
 
 </body>
 </html>
+
