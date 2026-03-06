@@ -228,6 +228,7 @@
         <select id="tipoBusca" onchange="atualizarPlaceholder()">
             <option value="numero">Buscar por: Nº do Medidor</option>
             <option value="PG">Buscar por: ID do Poste (PG)</option> 
+            <option value="cidade">🗺️ Buscar por: Cidade</option> 
         </select>
 
         <div class="input-group">
@@ -251,16 +252,18 @@
         function atualizarPlaceholder() {
             const tipo = document.getElementById('tipoBusca').value;
             const input = document.getElementById('inputBusca');
+            
             if (tipo === 'numero') {
                 input.placeholder = "Ex: 45072 (Dígitos finais)";
-            } else {
+            } else if (tipo === 'PG') {
                 input.placeholder = "Ex: PG1234 (ID do Poste)";
+            } else if (tipo === 'cidade') {
+                input.placeholder = "Ex: Currais Novos";
             }
             input.focus();
         }
 
         async function buscarDados() {
-            // Removi os espaços em branco que o usuário possa digitar sem querer
             const input = document.getElementById('inputBusca').value.trim();
             const tipoBusca = document.getElementById('tipoBusca').value; 
             
@@ -277,11 +280,20 @@
             divMensagem.innerHTML = "<span style='color: var(--primary);'>Buscando no banco de dados... ⏳</span>";
 
             try {
-                // MUDANÇA AQUI: Trocamos o .like por .ilike para ignorar maiúsculas/minúsculas
-                const { data, error } = await clienteSupabase
-                    .from('medidores') 
-                    .select('numero, lat, lng, Rua, PG, MRU')
-                    .ilike(tipoBusca, `%${input}%`); 
+                let resposta;
+
+                // Lógica ramificada: se for cidade, usa a função espacial. Se não, usa a busca normal.
+                if (tipoBusca === 'cidade') {
+                    resposta = await clienteSupabase
+                        .rpc('buscar_medidores_cidade', { cidade_alvo: input });
+                } else {
+                    resposta = await clienteSupabase
+                        .from('medidores') 
+                        .select('numero, lat, lng, Rua, PG, MRU')
+                        .ilike(tipoBusca, `%${input}%`);
+                }
+
+                const { data, error } = resposta;
 
                 if (error) throw error;
 
