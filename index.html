@@ -260,6 +260,7 @@
         }
 
         async function buscarDados() {
+            // Removi os espaços em branco que o usuário possa digitar sem querer
             const input = document.getElementById('inputBusca').value.trim();
             const tipoBusca = document.getElementById('tipoBusca').value; 
             
@@ -276,11 +277,11 @@
             divMensagem.innerHTML = "<span style='color: var(--primary);'>Buscando no banco de dados... ⏳</span>";
 
             try {
-                // Aqui está a grande correção: Rua, PG e MRU com as maiúsculas exatas do seu banco
+                // MUDANÇA AQUI: Trocamos o .like por .ilike para ignorar maiúsculas/minúsculas
                 const { data, error } = await clienteSupabase
                     .from('medidores') 
                     .select('numero, lat, lng, Rua, PG, MRU')
-                    .like(tipoBusca, `%${input}%`); 
+                    .ilike(tipoBusca, `%${input}%`); 
 
                 if (error) throw error;
 
@@ -295,7 +296,6 @@
                         
                         const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
                         
-                        // Lendo as variáveis com as letras maiúsculas exatas
                         let enderecoTexto = item.Rua ? item.Rua : "Não informado";
                         let pgTexto = item.PG ? item.PG : "N/D";
                         let mruTexto = item.MRU ? item.MRU : "N/D";
