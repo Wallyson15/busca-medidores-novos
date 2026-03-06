@@ -278,7 +278,7 @@
 
             try {
                 const { data, error } = await clienteSupabase
-                    .from('medidores2') 
+                    .from('medidores') 
                     .select('numero, lat, lng, rua, PG, MRU')
                     .like(tipoBusca, `%${input}%`); 
 
@@ -347,4 +347,5 @@
 
 </body>
 </html>
+
 
