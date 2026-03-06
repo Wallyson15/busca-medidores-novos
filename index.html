@@ -296,9 +296,9 @@
                         // Link oficial do Google Maps corrigido definitivamente
                         const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
                         
-                        let enderecoTexto = item.endereco ? item.endereco : "Não informado";
-                        let pgTexto = item.pg ? item.pg : "N/D";
-                        let mruTexto = item.mru ? item.mru : "N/D";
+                        let enderecoTexto = item.rua ? item.rua : "Não informado";
+                        let pgTexto = item.PG ? item.PG : "N/D";
+                        let mruTexto = item.MRU ? item.MRU : "N/D";
                         
                         htmlLista += `
                             <div class="item-medidor">
@@ -311,10 +311,10 @@
                                 </div>
                                 <div class="detalhes-secundarios">
                                     <div class="badge-duplo">
-                                        <span><strong>PG:</strong> ${pgTexto}</span>
-                                        <span><strong>MRU:</strong> ${mruTexto}</span>
+                                        <span><strong>PG:</strong> ${PGTexto}</span>
+                                        <span><strong>MRU:</strong> ${MRUTexto}</span>
                                     </div>
-                                    <span><strong>Endereço:</strong> ${enderecoTexto}</span>
+                                    <span><strong>Endereço:</strong> ${ruaTexto}</span>
                                 </div>
                             </div>
                         `;
@@ -347,5 +347,6 @@
 
 </body>
 </html>
+
 
 
