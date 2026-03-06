@@ -276,10 +276,20 @@
             divMensagem.innerHTML = "<span style='color: var(--primary);'>Buscando no banco de dados... ⏳</span>";
 
             try {
+                // NOVA LÓGICA DE BUSCA AQUI
+                let padraoBusca = '';
+                if (tipoBusca === 'numero') {
+                    // Busca apenas no FINAL do número
+                    padraoBusca = `%${input}`; 
+                } else {
+                    // Busca em QUALQUER LUGAR (PG)
+                    padraoBusca = `%${input}%`; 
+                }
+
                 const { data, error } = await clienteSupabase
                     .from('medidores') 
                     .select('numero, lat, lng, Rua, PG, MRU')
-                    .ilike(tipoBusca, `%${input}%`); 
+                    .ilike(tipoBusca, padraoBusca); 
 
                 if (error) throw error;
 
