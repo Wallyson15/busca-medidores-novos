@@ -21,6 +21,8 @@
             --text-muted: #64748b;
             --border: #e2e8f0;
             --success: #10b981;
+            --export: #8b5cf6; /* Cor roxa para o botão de exportar */
+            --export-hover: #7c3aed;
         }
 
         body { 
@@ -128,6 +130,16 @@
         .btn-limpar { background-color: var(--secondary); color: var(--text-main); flex: 1; }
         .btn-limpar:hover { background-color: var(--secondary-hover); }
         
+        /* NOVO BOTÃO DE EXPORTAR */
+        .btn-exportar {
+            background-color: var(--export);
+            color: white;
+            width: 100%;
+            box-shadow: 0 4px 6px rgba(139, 92, 246, 0.2);
+            margin-bottom: 5px;
+        }
+        .btn-exportar:hover { background-color: var(--export-hover); }
+
         #mensagem { 
             margin-top: 15px; 
             font-size: 14px; 
@@ -228,6 +240,7 @@
         <select id="tipoBusca" onchange="atualizarPlaceholder()">
             <option value="numero">Buscar por: Nº do Medidor</option>
             <option value="PG">Buscar por: ID do Poste (PG)</option> 
+            <option value="MRU">Buscar por: MRU</option> 
         </select>
 
         <div class="input-group">
@@ -238,6 +251,7 @@
             <button class="btn-buscar" onclick="buscarDados()">Buscar</button>
             <button class="btn-limpar" onclick="limparBusca()">Limpar</button>
         </div>
+        <button class="btn-exportar" onclick="exportarMyMaps()">🗺️ Exportar para My Maps (CSV)</button>
         
         <div id="mensagem"></div>
         <div id="listaResultados"></div> 
@@ -253,8 +267,11 @@
             const input = document.getElementById('inputBusca');
             if (tipo === 'numero') {
                 input.placeholder = "Ex: 45072 (Dígitos finais)";
-            } else {
+            } else if (tipo === 'PG') {
                 input.placeholder = "Ex: PG1234 (ID do Poste)";
+            } else {
+                // NOVO PLACEHOLDER PARA MRU
+                input.placeholder = "Ex: 07061112 (Código MRU)";
             }
             input.focus();
         }
@@ -276,13 +293,11 @@
             divMensagem.innerHTML = "<span style='color: var(--primary);'>Buscando no banco de dados... ⏳</span>";
 
             try {
-                // NOVA LÓGICA DE BUSCA AQUI
                 let padraoBusca = '';
                 if (tipoBusca === 'numero') {
-                    // Busca apenas no FINAL do número
                     padraoBusca = `%${input}`; 
                 } else {
-                    // Busca em QUALQUER LUGAR (PG)
+                    // Serve tanto para PG quanto para MRU
                     padraoBusca = `%${input}%`; 
                 }
 
@@ -291,67 +306,4 @@
                     .select('numero, lat, lng, Rua, PG, MRU')
                     .ilike(tipoBusca, padraoBusca); 
 
-                if (error) throw error;
-
-                if (data && data.length > 0) {
-                    divMensagem.innerHTML = `<span style='color: var(--success);'>${data.length} resultado(s) encontrado(s)! ✅</span>`;
-                    
-                    let htmlLista = '';
-                    
-                    data.forEach(item => {
-                        let lat = String(item.lat).replace(',', '.');
-                        let lng = String(item.lng).replace(',', '.');
-                        
-                        const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
-                        
-                        let enderecoTexto = item.Rua ? item.Rua : "Não informado";
-                        let pgTexto = item.PG ? item.PG : "N/D";
-                        let mruTexto = item.MRU ? item.MRU : "N/D";
-                        
-                        htmlLista += `
-                            <div class="item-medidor">
-                                <div class="cabecalho-card">
-                                    <div class="info-principal">
-                                        <span class="info-label">Medidor</span>
-                                        <span class="info-numero">${item.numero}</span>
-                                    </div>
-                                    <a href="${mapsUrl}" target="_blank" class="btn-mapa">🗺️ Mapa</a>
-                                </div>
-                                <div class="detalhes-secundarios">
-                                    <div class="badge-duplo">
-                                        <span><strong>PG:</strong> ${pgTexto}</span>
-                                        <span><strong>MRU:</strong> ${mruTexto}</span>
-                                    </div>
-                                    <span><strong>Rua:</strong> ${enderecoTexto}</span>
-                                </div>
-                            </div>
-                        `;
-                    });
-
-                    divResultados.innerHTML = htmlLista;
-                    
-                } else {
-                    divMensagem.innerHTML = "<span style='color: #f59e0b;'>Nenhum resultado encontrado. ❌</span>";
-                }
-            } catch (err) {
-                console.error("Erro na busca:", err);
-                divMensagem.innerHTML = "<span style='color: #ef4444;'>Erro ao conectar com o banco de dados.</span>";
-            }
-        }
-        
-        function limparBusca() {
-            document.getElementById('inputBusca').value = '';
-            document.getElementById('mensagem').innerHTML = '';
-            document.getElementById('listaResultados').innerHTML = '';
-            document.getElementById('inputBusca').focus();
-        }
-
-        document.getElementById('inputBusca').addEventListener('keypress', function (e) {
-            if (e.key === 'Enter') {
-                buscarDados();
-            }
-        });
-    </script>
-
-</body>
-</html>
+                if (error
