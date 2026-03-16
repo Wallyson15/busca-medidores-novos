@@ -368,7 +368,7 @@
 
                     const { data, error } = await clienteSupabase
                         .from('medidores')
-                        .select('numero, lat, lng, Rua, PG, MRU')
+                        .select('numero, lat, lng, Rua, PG, MRU, sequencia')
                         .ilike(tipoBusca, padraoBusca);
 
                     if (error) throw error;
@@ -378,7 +378,7 @@
                         return;
                     }
 
-                    let csvContent = "Numero_Medidor,Latitude,Longitude,Rua,PG,MRU\n";
+                    let csvContent = "Sequencia,Numero_Medidor,Latitude,Longitude,Rua,PG,MRU\n";
                     
                     data.forEach(item => {
                         let lat = String(item.lat || '').replace(',', '.');
@@ -387,8 +387,9 @@
                         let pg = item.PG || "N/D";
                         let mru = item.MRU || "N/D";
                         let num = item.numero || "N/D";
+                        let seq = item.sequencia || "";
 
-                        csvContent += `${num},${lat},${lng},${rua},${pg},${mru}\n`;
+                        csvContent += `${seq},${num},${lat},${lng},${rua},${pg},${mru}\n`;
                     });
 
                     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
