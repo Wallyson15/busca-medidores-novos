@@ -10,6 +10,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     
     <style>
+        /* O CSS continua exatamente o mesmo */
         :root {
             --primary: #2563eb;
             --primary-hover: #1d4ed8;
@@ -21,7 +22,7 @@
             --text-muted: #64748b;
             --border: #e2e8f0;
             --success: #10b981;
-            --export: #8b5cf6; /* Cor roxa para o botão de exportar */
+            --export: #8b5cf6; 
             --export-hover: #7c3aed;
         }
 
@@ -130,7 +131,6 @@
         .btn-limpar { background-color: var(--secondary); color: var(--text-main); flex: 1; }
         .btn-limpar:hover { background-color: var(--secondary-hover); }
         
-        /* NOVO BOTÃO DE EXPORTAR */
         .btn-exportar {
             background-color: var(--export);
             color: white;
@@ -237,7 +237,7 @@
         <h2 class="header-title">📍 Localizador</h2>
         <p class="header-subtitle">Encontre equipamentos em campo</p>
         
-        <select id="tipoBusca" onchange="atualizarPlaceholder()">
+        <select id="tipoBusca">
             <option value="numero">Buscar por: Nº do Medidor</option>
             <option value="PG">Buscar por: ID do Poste (PG)</option> 
             <option value="MRU">Buscar por: MRU</option> 
@@ -248,62 +248,190 @@
         </div>
         
         <div class="botoes-grupo">
-            <button class="btn-buscar" onclick="buscarDados()">Buscar</button>
-            <button class="btn-limpar" onclick="limparBusca()">Limpar</button>
+            <button id="btnBuscar" class="btn-buscar">Buscar</button>
+            <button id="btnLimpar" class="btn-limpar">Limpar</button>
         </div>
-        <button class="btn-exportar" onclick="exportarMyMaps()">🗺️ Exportar para My Maps (CSV)</button>
+        
+        <button id="btnExportar" class="btn-exportar">🗺️ Exportar para My Maps (CSV)</button>
         
         <div id="mensagem"></div>
         <div id="listaResultados"></div> 
     </div>
 
     <script>
-        const supabaseUrl = 'https://hprrnzotddltordqwjui.supabase.co'; 
-        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhwcnJuem90ZGRsdG9yZHF3anVpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI3MzExNTMsImV4cCI6MjA4ODMwNzE1M30.TU5clfW2ce0iku1Vo4oNa34G920lyJvwJ8TJscklI8s';
-        const clienteSupabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+        // Trava de segurança: Verifica se o Supabase realmente carregou
+        if (typeof supabase === 'undefined') {
+            document.getElementById('mensagem').innerHTML = "<span style='color: #ef4444;'>Erro: Biblioteca não carregada. Verifique sua internet ou desative o AdBlock.</span>";
+            console.error("A biblioteca do Supabase não foi carregada pelo navegador.");
+        } else {
+            // Inicializa o banco de dados
+            const supabaseUrl = 'https://hprrnzotddltordqwjui.supabase.co'; 
+            const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhwcnJuem90ZGRsdG9yZHF3anVpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI3MzExNTMsImV4cCI6MjA4ODMwNzE1M30.TU5clfW2ce0iku1Vo4oNa34G920lyJvwJ8TJscklI8s';
+            const clienteSupabase = supabase.createClient(supabaseUrl, supabaseKey);
 
-        function atualizarPlaceholder() {
-            const tipo = document.getElementById('tipoBusca').value;
-            const input = document.getElementById('inputBusca');
-            if (tipo === 'numero') {
-                input.placeholder = "Ex: 45072 (Dígitos finais)";
-            } else if (tipo === 'PG') {
-                input.placeholder = "Ex: PG1234 (ID do Poste)";
-            } else {
-                // NOVO PLACEHOLDER PARA MRU
-                input.placeholder = "Ex: 07061112 (Código MRU)";
-            }
-            input.focus();
-        }
-
-        async function buscarDados() {
-            const input = document.getElementById('inputBusca').value.trim();
-            const tipoBusca = document.getElementById('tipoBusca').value; 
-            
-            const divMensagem = document.getElementById('mensagem');
-            const divResultados = document.getElementById('listaResultados');
-
-            divResultados.innerHTML = '';
-
-            if (!input) {
-                divMensagem.innerHTML = "<span style='color: #ef4444;'>Por favor, digite o que deseja buscar.</span>";
-                return;
-            }
-
-            divMensagem.innerHTML = "<span style='color: var(--primary);'>Buscando no banco de dados... ⏳</span>";
-
-            try {
-                let padraoBusca = '';
-                if (tipoBusca === 'numero') {
-                    padraoBusca = `%${input}`; 
+            function atualizarPlaceholder() {
+                const tipo = document.getElementById('tipoBusca').value;
+                const input = document.getElementById('inputBusca');
+                if (tipo === 'numero') {
+                    input.placeholder = "Ex: 45072 (Dígitos finais)";
+                } else if (tipo === 'PG') {
+                    input.placeholder = "Ex: PG1234 (ID do Poste)";
                 } else {
-                    // Serve tanto para PG quanto para MRU
-                    padraoBusca = `%${input}%`; 
+                    input.placeholder = "Ex: 07061112 (Código MRU)";
+                }
+                input.focus();
+            }
+
+            async function buscarDados() {
+                const input = document.getElementById('inputBusca').value.trim();
+                const tipoBusca = document.getElementById('tipoBusca').value; 
+                
+                const divMensagem = document.getElementById('mensagem');
+                const divResultados = document.getElementById('listaResultados');
+
+                divResultados.innerHTML = '';
+
+                if (!input) {
+                    divMensagem.innerHTML = "<span style='color: #ef4444;'>Por favor, digite o que deseja buscar.</span>";
+                    return;
                 }
 
-                const { data, error } = await clienteSupabase
-                    .from('medidores') 
-                    .select('numero, lat, lng, Rua, PG, MRU')
-                    .ilike(tipoBusca, padraoBusca); 
+                divMensagem.innerHTML = "<span style='color: var(--primary);'>Buscando no banco de dados... ⏳</span>";
 
-                if (error
+                try {
+                    let padraoBusca = tipoBusca === 'numero' ? `%${input}` : `%${input}%`; 
+
+                    const { data, error } = await clienteSupabase
+                        .from('medidores') 
+                        .select('numero, lat, lng, Rua, PG, MRU')
+                        .ilike(tipoBusca, padraoBusca); 
+
+                    if (error) throw error;
+
+                    if (data && data.length > 0) {
+                        divMensagem.innerHTML = `<span style='color: var(--success);'>${data.length} resultado(s) encontrado(s)! ✅</span>`;
+                        let htmlLista = '';
+                        
+                        data.forEach(item => {
+                            let lat = String(item.lat || '').replace(',', '.');
+                            let lng = String(item.lng || '').replace(',', '.');
+                            const mapsUrl = `https://www.google.com/maps/search/?api=1&query=$${lat},${lng}`;
+                            
+                            let enderecoTexto = item.Rua ? item.Rua : "Não informado";
+                            let pgTexto = item.PG ? item.PG : "N/D";
+                            let mruTexto = item.MRU ? item.MRU : "N/D";
+                            let num = item.numero ? item.numero : "N/D";
+                            
+                            htmlLista += `
+                                <div class="item-medidor">
+                                    <div class="cabecalho-card">
+                                        <div class="info-principal">
+                                            <span class="info-label">Medidor</span>
+                                            <span class="info-numero">${num}</span>
+                                        </div>
+                                        <a href="${mapsUrl}" target="_blank" class="btn-mapa">🗺️ Mapa</a>
+                                    </div>
+                                    <div class="detalhes-secundarios">
+                                        <div class="badge-duplo">
+                                            <span><strong>PG:</strong> ${pgTexto}</span>
+                                            <span><strong>MRU:</strong> ${mruTexto}</span>
+                                        </div>
+                                        <span><strong>Rua:</strong> ${enderecoTexto}</span>
+                                    </div>
+                                </div>
+                            `;
+                        });
+                        divResultados.innerHTML = htmlLista;
+                    } else {
+                        divMensagem.innerHTML = "<span style='color: #f59e0b;'>Nenhum resultado encontrado. ❌</span>";
+                    }
+                } catch (err) {
+                    console.error("Erro na busca:", err);
+                    divMensagem.innerHTML = "<span style='color: #ef4444;'>Erro ao conectar com o banco de dados.</span>";
+                }
+            }
+            
+            async function exportarMyMaps() {
+                const input = document.getElementById('inputBusca').value.trim();
+                const tipoBusca = document.getElementById('tipoBusca').value;
+                const divMensagem = document.getElementById('mensagem');
+
+                if (!input) {
+                    divMensagem.innerHTML = "<span style='color: #ef4444;'>Digite um valor antes de exportar.</span>";
+                    return;
+                }
+
+                divMensagem.innerHTML = "<span style='color: var(--export);'>Gerando arquivo de mapa... ⏳</span>";
+
+                try {
+                    let padraoBusca = tipoBusca === 'numero' ? `%${input}` : `%${input}%`; 
+
+                    const { data, error } = await clienteSupabase
+                        .from('medidores')
+                        .select('numero, lat, lng, Rua, PG, MRU')
+                        .ilike(tipoBusca, padraoBusca);
+
+                    if (error) throw error;
+
+                    if (!data || data.length === 0) {
+                        divMensagem.innerHTML = "<span style='color: #f59e0b;'>Nenhum dado encontrado para gerar o mapa. ❌</span>";
+                        return;
+                    }
+
+                    let csvContent = "Numero_Medidor,Latitude,Longitude,Rua,PG,MRU\n";
+                    
+                    data.forEach(item => {
+                        let lat = String(item.lat || '').replace(',', '.');
+                        let lng = String(item.lng || '').replace(',', '.');
+                        let rua = item.Rua ? `"${item.Rua}"` : '"Não informado"';
+                        let pg = item.PG || "N/D";
+                        let mru = item.MRU || "N/D";
+                        let num = item.numero || "N/D";
+
+                        csvContent += `${num},${lat},${lng},${rua},${pg},${mru}\n`;
+                    });
+
+                    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                    const link = document.createElement("a");
+                    const url = URL.createObjectURL(blob);
+                    
+                    link.setAttribute("href", url);
+                    link.setAttribute("download", `mapa_${tipoBusca}_${input}.csv`);
+                    link.style.visibility = 'hidden';
+                    
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+
+                    divMensagem.innerHTML = `<span style='color: var(--success);'>Arquivo CSV gerado com sucesso! ✅</span>`;
+
+                } catch (err) {
+                    console.error("Erro ao exportar:", err);
+                    divMensagem.innerHTML = "<span style='color: #ef4444;'>Erro ao gerar o arquivo.</span>";
+                }
+            }
+
+            function limparBusca() {
+                document.getElementById('inputBusca').value = '';
+                document.getElementById('mensagem').innerHTML = '';
+                document.getElementById('listaResultados').innerHTML = '';
+                document.getElementById('inputBusca').focus();
+            }
+
+            // AQUI CONECTAMOS OS BOTÕES ÀS FUNÇÕES (Substituindo o onclick)
+            document.getElementById('tipoBusca').addEventListener('change', atualizarPlaceholder);
+            document.getElementById('btnBuscar').addEventListener('click', buscarDados);
+            document.getElementById('btnLimpar').addEventListener('click', limparBusca);
+            document.getElementById('btnExportar').addEventListener('click', exportarMyMaps);
+
+            document.getElementById('inputBusca').addEventListener('keypress', function (e) {
+                if (e.key === 'Enter') {
+                    buscarDados();
+                }
+            });
+
+            console.log("✅ Script carregado com sucesso! Os botões já estão funcionando.");
+        }
+    </script>
+</body>
+</html>
