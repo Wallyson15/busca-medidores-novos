@@ -140,6 +140,15 @@
         }
         .btn-exportar:hover { background-color: var(--export-hover); }
 
+        .btn-abrir-mymaps {
+            background-color: #0f766e;
+            color: white;
+            width: 100%;
+            margin-top: 8px;
+            box-shadow: 0 4px 6px rgba(15, 118, 110, 0.2);
+        }
+        .btn-abrir-mymaps:hover { background-color: #115e59; }
+
         #mensagem { 
             margin-top: 15px; 
             font-size: 14px; 
@@ -269,6 +278,7 @@
         </div>
         
         <button id="btnExportar" class="btn-exportar">🗺️ Exportar para My Maps (CSV)</button>
+        <button id="btnAbrirMyMaps" class="btn-abrir-mymaps">🌐 Abrir Google My Maps</button>
         
         <div id="mensagem"></div>
         <div id="listaResultados"></div> 
@@ -461,6 +471,9 @@
             document.getElementById('btnBuscar').addEventListener('click', buscarDados);
             document.getElementById('btnLimpar').addEventListener('click', limparBusca);
             document.getElementById('btnExportar').addEventListener('click', exportarMyMaps);
+            document.getElementById('btnAbrirMyMaps').addEventListener('click', () => {
+                window.open('https://www.google.com/maps/d/', '_blank', 'noopener,noreferrer');
+            });
 
             const btnTopo = document.getElementById('btnTopo');
             btnTopo.addEventListener('click', () => {
