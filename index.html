@@ -430,7 +430,11 @@
                     const url = URL.createObjectURL(blob);
                     
                     link.setAttribute("href", url);
-                    link.setAttribute("download", `mapa_${tipoBusca}_${input}.csv`);
+                    // Usa a MRU do primeiro medidor único como nome do arquivo.
+                    const mruArquivo = String(medidoresUnicos[0].MRU || 'sem_MRU')
+                        .trim()
+                        .replace(/[\\/:*?"<>|]/g, '_');
+                    link.setAttribute("download", `mapa_${mruArquivo}.csv`);
                     link.style.visibility = 'hidden';
                     
                     document.body.appendChild(link);
